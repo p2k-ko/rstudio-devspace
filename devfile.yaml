@@ -1,0 +1,46 @@
+schemaVersion: 2.2.2
+metadata:
+  name: rstudio-devspace
+projects:
+  - name: rstudio-devspace-git
+    git:
+      remotes:
+        origin: 'https://github.com/p2k-ko/rstudio-devspace'
+          
+components:
+  - name: tools
+    container:
+      image: ghcr.io/p2k-ko/rstudio-devspace:0.0.1 
+      env:
+        - name: PASSWORD
+          value: 'mystrongpassword'
+        - name: DOCKER_HOST
+          value: 'unix:///tmp/podman/podman.sock'
+      endpoints:
+        - exposure: public
+          name: rstudio
+          protocol: https
+          targetPort: 8787
+          path: /ui
+      volumeMounts:
+        - name: cache
+          path: /home/user/.cache
+      cpuLimit: '4'
+      cpuRequest: '1'
+      memoryLimit: '8G'
+      memoryRequest: '4G'
+      mountSources: true
+  - name: cache
+    volume:
+      size: 256M
+commands:
+  - id: 99-start-podman-socket
+    exec:
+      label: "99. [tools] Start Podman Socked (done automatically post start)"
+      component: tools
+      commandLine: >
+        bash -c 'mkdir -p /tmp/podman && nohup /usr/bin/podman.orig system service --time=0
+        unix:///tmp/podman/podman.sock > /tmp/podman/podman.log 2>&1 & disown'
+events:
+  postStart:
+    - 99-start-podman-socket
