@@ -33,13 +33,3 @@ components:
   - name: cache
     volume:
       size: 256M
-commands:
-  - id: 99-post-step
-    exec:
-      label: "99. [tools] Say Hellorld!"
-      component: tools
-      commandLine: >
-        bash -c 'echo Hellorld!'
-events:
-  postStart:
-    - 99-post-step
